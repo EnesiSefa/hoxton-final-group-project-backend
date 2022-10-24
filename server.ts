@@ -53,8 +53,9 @@ app.post("/sign-up/user", async (req, res) => {
         data: {
           name: req.body.name,
           lastName: req.body.lastName,
+          profilePic:req.body.profilePic,
           email: req.body.email,
-          password: bcrypt.hashSync(req.body.password),
+          password: bcrypt.hashSync(req.body.password,10),
         },
       });
       res.send({ newUser: newUser, token: getToken(newUser.id) });
@@ -66,13 +67,14 @@ app.post("/sign-up/user", async (req, res) => {
 });
 app.post("/sign-up/instructor", async (req, res) => {
   try {
+   
     const match = await prisma.instructor.findUnique({
       where: { email: req.body.email },
     });
     if (match) {
       res.status(400).send({ error: "This account already exist!" });
     } else {
-      const newDesigner = await prisma.instructor.create({
+      const newInstructor = await prisma.instructor.create({
         data: {
           name: req.body.name,
           lastName: req.body.lastName,
@@ -80,7 +82,7 @@ app.post("/sign-up/instructor", async (req, res) => {
           password: bcrypt.hashSync(req.body.password),
         },
       });
-      res.send({ newDesigner: newDesigner, token: getToken(newDesigner.id) });
+      res.send({ newInstructor: newInstructor, token: getToken(newInstructor.id) });
     }
   } catch (error) {
     //@ts-ignore
@@ -104,11 +106,11 @@ app.post("/sign-in/user", async (req, res) => {
   });
   app.post("/sign-in/instructor", async (req, res) => {
     try {
-      const designer = await prisma.instructor.findUnique({
+      const instructor = await prisma.instructor.findUnique({
         where: { email: req.body.email },
       });
-      if (designer && bcrypt.compareSync(req.body.password, designer.password)) {
-        res.send({ designer: designer, token: getToken(designer.id) });
+      if (instructor && bcrypt.compareSync(req.body.password, instructor.password)) {
+        res.send({ instructor: instructor, token: getToken(instructor.id) });
       } else {
         res.status(400).send({ message: "Invalid email/password" });
       }
@@ -130,12 +132,12 @@ app.post("/sign-in/user", async (req, res) => {
       res.status(400).send({ error: error.message });
     }
   });
-  app.get("/validate/designer", async (req, res) => {
+  app.get("/validate/instructor", async (req, res) => {
     try {
       if (req.headers.authorization) {
-        const designer = await getCurrentInstructor(req.headers.authorization);
+        const instructor = await getCurrentInstructor(req.headers.authorization);
         // @ts-ignore
-        res.send({ designer, token: getToken(designer.id) });
+        res.send({ instructor, token: getToken(instructor.id) });
       }
     } catch (error) {
       // @ts-ignore

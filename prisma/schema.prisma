@@ -11,9 +11,50 @@ datasource db {
 }
 
 model User {
-  id         Int    @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   profilePic String
-  username   String @unique
-  email      String @unique
+  name       String
+  lastName   String
+  email      String   @unique
   password   String
+  reviews    Review[]
+}
+
+model Instructor {
+  id       Int      @id @default(autoincrement())
+  name     String
+  lastName String
+  email    String   @unique
+  password String
+  courses  Course[]
+}
+
+model Review {
+  id       Int    @id @default(autoincrement())
+  content  String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId Int
+}
+
+model Course {
+  id           Int        @id @default(autoincrement())
+  title        String
+  category     Category   @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  instructorId Int
+  reviews      Review[]
+  image        String
+  description  String
+  price        Int
+}
+
+
+
+model Category {
+  id      Int      @id @default(autoincrement())
+  name    String
+  courses Course[]
 }

@@ -19,13 +19,129 @@ const SECRET = process.env.SECRET!;
 const prisma = new PrismaClient();
 // { log: ["error", "info", "query", "warn"] }
 
-function generateToken(id: number) {
+function getToken(id: number) {
   return jwt.sign({ id }, SECRET);
 }
+
+async function getCurrentUser(token: string) {
+    // @ts-ignore
+    const { id } = jwt.verify(token, SECRET);
+    const user = await prisma.user.findUnique({ where: { id: id } });
+    return user;
+  }
+  async function getCurrentInstructor(token: string) {
+    // @ts-ignore
+    const { id } = jwt.verify(token, SECRET);
+    const instructor = await prisma.instructor.findUnique({ where: { id: id } });
+    return instructor;
+  }
 app.get("/users",async(req,res)=>{
 const users = prisma.user.findMany()
 res.send(users)
 })
+
+app.post("/sign-up/user", async (req, res) => {
+  try {
+    const match = await prisma.user.findUnique({
+      where: { email: req.body.email },
+    });
+
+    if (match) {
+      res.status(400).send({ error: "This account already exist!" });
+    } else {
+      const newUser = await prisma.user.create({
+        data: {
+          name: req.body.name,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          password: bcrypt.hashSync(req.body.password),
+        },
+      });
+      res.send({ newUser: newUser, token: getToken(newUser.id) });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+app.post("/sign-up/instructor", async (req, res) => {
+  try {
+    const match = await prisma.instructor.findUnique({
+      where: { email: req.body.email },
+    });
+    if (match) {
+      res.status(400).send({ error: "This account already exist!" });
+    } else {
+      const newDesigner = await prisma.instructor.create({
+        data: {
+          name: req.body.name,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          password: bcrypt.hashSync(req.body.password),
+        },
+      });
+      res.send({ newDesigner: newDesigner, token: getToken(newDesigner.id) });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+app.post("/sign-in/user", async (req, res) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: req.body.email },
+      });
+      if (user && bcrypt.compareSync(req.body.password, user.password)) {
+        res.send({ user: user, token: getToken(user.id) });
+      } else {
+        res.status(400).send({ message: "Invalid email/password" });
+      }
+    } catch (error) {
+      //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+    }
+  });
+  app.post("/sign-in/instructor", async (req, res) => {
+    try {
+      const designer = await prisma.instructor.findUnique({
+        where: { email: req.body.email },
+      });
+      if (designer && bcrypt.compareSync(req.body.password, designer.password)) {
+        res.send({ designer: designer, token: getToken(designer.id) });
+      } else {
+        res.status(400).send({ message: "Invalid email/password" });
+      }
+    } catch (error) {
+      //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+    }
+  });
+
+  app.get("/validate/user", async (req, res) => {
+    try {
+      if (req.headers.authorization) {
+        const user = await getCurrentUser(req.headers.authorization);
+        // @ts-ignore
+        res.send({ user, token: getToken(user.id) });
+      }
+    } catch (error) {
+      // @ts-ignore
+      res.status(400).send({ error: error.message });
+    }
+  });
+  app.get("/validate/designer", async (req, res) => {
+    try {
+      if (req.headers.authorization) {
+        const designer = await getCurrentInstructor(req.headers.authorization);
+        // @ts-ignore
+        res.send({ designer, token: getToken(designer.id) });
+      }
+    } catch (error) {
+      // @ts-ignore
+      res.status(400).send({ error: error.message });
+    }
+  });
 app.listen(port, () => {
     console.log(`App running: http://localhost:${port}`);
   });

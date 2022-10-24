@@ -3,19 +3,17 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.options("*", cors());
 app.use(express.json());
-import dotenv from "dotenv";
-dotenv.config();
-
-const port = 4166;
-
-const SECRET = "ABC";
 
 const prisma = new PrismaClient();
+const port = 4166;
+const SECRET = "ABC";
 
 function getToken(id: number) {
   return jwt.sign({ id: id }, SECRET, {
@@ -34,6 +32,7 @@ async function getCurrentInstructor(token: string) {
   const instructor = await prisma.instructor.findUnique({ where: { id: id } });
   return instructor;
 }
+
 app.get("/users", async (req, res) => {
   try {
     const users = prisma.user.findMany();

@@ -123,11 +123,16 @@ app.post("/sign-in/instructor", async (req, res) => {
     } else {
       res.status(400).send({ message: "Invalid email/password" });
     }
+<<<<<<< HEAD
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ error: [error.message] });
   }
 });
+=======
+  });
+  // validate
+>>>>>>> cb8ea45dc30826037c65e5a3270fa5c75ba495ac
 
 app.get("/validate/user", async (req, res) => {
   try {

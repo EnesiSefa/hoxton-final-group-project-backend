@@ -119,6 +119,7 @@ app.post("/sign-in/user", async (req, res) => {
     res.status(400).send({ error: [error.message] });
     }
   });
+  // validate
 
   app.get("/validate/user", async (req, res) => {
     try {

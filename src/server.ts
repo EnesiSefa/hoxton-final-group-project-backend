@@ -12,7 +12,9 @@ app.options("*", cors());
 app.use(express.json());
 
 const prisma = new PrismaClient();
+
 const port = 4166;
+
 const SECRET = "ABC";
 
 function getToken(id: number) {
@@ -35,7 +37,7 @@ async function getCurrentInstructor(token: string) {
 
 app.get("/users", async (req, res) => {
   try {
-    const users = prisma.user.findMany();
+    const users = await prisma.user.findMany();
     res.send(users);
   } catch (error) {
     // @ts-ignore

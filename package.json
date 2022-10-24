@@ -1,7 +1,6 @@
 {
   "name": "hoxton-final-group-project-backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,5 +23,14 @@
   },
   "devDependencies": {
     "prisma": "^4.3.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EnesiSefa/hoxton-final-group-project-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EnesiSefa/hoxton-final-group-project-backend/issues"
+  },
+  "homepage": "https://github.com/EnesiSefa/hoxton-final-group-project-backend#readme",
+  "description": ""
 }

@@ -4,41 +4,45 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-
 const app = express();
 app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 import dotenv from "dotenv";
-
-const port = 4000;
-
 dotenv.config();
-const SECRET = process.env.SECRET!;
+
+const port = 4166;
+
+const SECRET = "ABC";
 
 const prisma = new PrismaClient();
-// { log: ["error", "info", "query", "warn"] }
 
 function getToken(id: number) {
-  return jwt.sign({ id }, SECRET);
+  return jwt.sign({ id: id }, SECRET, {
+    expiresIn: "15 days",
+  });
 }
-
 async function getCurrentUser(token: string) {
+  // @ts-ignore
+  const { id } = jwt.verify(token, SECRET);
+  const user = await prisma.user.findUnique({ where: { id: id } });
+  return user;
+}
+async function getCurrentInstructor(token: string) {
+  // @ts-ignore
+  const { id } = jwt.verify(token, SECRET);
+  const instructor = await prisma.instructor.findUnique({ where: { id: id } });
+  return instructor;
+}
+app.get("/users", async (req, res) => {
+  try {
+    const users = prisma.user.findMany();
+    res.send(users);
+  } catch (error) {
     // @ts-ignore
-    const { id } = jwt.verify(token, SECRET);
-    const user = await prisma.user.findUnique({ where: { id: id } });
-    return user;
+    res.status(400).send({ error: error.message });
   }
-  async function getCurrentInstructor(token: string) {
-    // @ts-ignore
-    const { id } = jwt.verify(token, SECRET);
-    const instructor = await prisma.instructor.findUnique({ where: { id: id } });
-    return instructor;
-  }
-app.get("/users",async(req,res)=>{
-const users = prisma.user.findMany()
-res.send(users)
-})
+});
 
 app.post("/sign-up/user", async (req, res) => {
   try {
@@ -53,9 +57,9 @@ app.post("/sign-up/user", async (req, res) => {
         data: {
           name: req.body.name,
           lastName: req.body.lastName,
-          profilePic:req.body.profilePic,
+          profilePic: req.body.profilePic,
           email: req.body.email,
-          password: bcrypt.hashSync(req.body.password,10),
+          password: bcrypt.hashSync(req.body.password, 10),
         },
       });
       res.send({ newUser: newUser, token: getToken(newUser.id) });
@@ -67,7 +71,6 @@ app.post("/sign-up/user", async (req, res) => {
 });
 app.post("/sign-up/instructor", async (req, res) => {
   try {
-   
     const match = await prisma.instructor.findUnique({
       where: { email: req.body.email },
     });
@@ -82,7 +85,10 @@ app.post("/sign-up/instructor", async (req, res) => {
           password: bcrypt.hashSync(req.body.password),
         },
       });
-      res.send({ newInstructor: newInstructor, token: getToken(newInstructor.id) });
+      res.send({
+        newInstructor: newInstructor,
+        token: getToken(newInstructor.id),
+      });
     }
   } catch (error) {
     //@ts-ignore
@@ -90,60 +96,63 @@ app.post("/sign-up/instructor", async (req, res) => {
   }
 });
 app.post("/sign-in/user", async (req, res) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: req.body.email },
-      });
-      if (user && bcrypt.compareSync(req.body.password, user.password)) {
-        res.send({ user: user, token: getToken(user.id) });
-      } else {
-        res.status(400).send({ message: "Invalid email/password" });
-      }
-    } catch (error) {
-      //@ts-ignore
-    res.status(400).send({ error: [error.message] });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: req.body.email },
+    });
+    if (user && bcrypt.compareSync(req.body.password, user.password)) {
+      res.send({ user: user, token: getToken(user.id) });
+    } else {
+      res.status(400).send({ message: "Invalid email/password" });
     }
-  });
-  app.post("/sign-in/instructor", async (req, res) => {
-    try {
-      const instructor = await prisma.instructor.findUnique({
-        where: { email: req.body.email },
-      });
-      if (instructor && bcrypt.compareSync(req.body.password, instructor.password)) {
-        res.send({ instructor: instructor, token: getToken(instructor.id) });
-      } else {
-        res.status(400).send({ message: "Invalid email/password" });
-      }
-    } catch (error) {
-      //@ts-ignore
+  } catch (error) {
+    //@ts-ignore
     res.status(400).send({ error: [error.message] });
+  }
+});
+app.post("/sign-in/instructor", async (req, res) => {
+  try {
+    const instructor = await prisma.instructor.findUnique({
+      where: { email: req.body.email },
+    });
+    if (
+      instructor &&
+      bcrypt.compareSync(req.body.password, instructor.password)
+    ) {
+      res.send({ instructor: instructor, token: getToken(instructor.id) });
+    } else {
+      res.status(400).send({ message: "Invalid email/password" });
     }
-  });
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
 
-  app.get("/validate/user", async (req, res) => {
-    try {
-      if (req.headers.authorization) {
-        const user = await getCurrentUser(req.headers.authorization);
-        // @ts-ignore
-        res.send({ user, token: getToken(user.id) });
-      }
-    } catch (error) {
+app.get("/validate/user", async (req, res) => {
+  try {
+    if (req.headers.authorization) {
+      const user = await getCurrentUser(req.headers.authorization);
       // @ts-ignore
-      res.status(400).send({ error: error.message });
+      res.send({ user, token: getToken(user.id) });
     }
-  });
-  app.get("/validate/instructor", async (req, res) => {
-    try {
-      if (req.headers.authorization) {
-        const instructor = await getCurrentInstructor(req.headers.authorization);
-        // @ts-ignore
-        res.send({ instructor, token: getToken(instructor.id) });
-      }
-    } catch (error) {
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/validate/instructor", async (req, res) => {
+  try {
+    if (req.headers.authorization) {
+      const instructor = await getCurrentInstructor(req.headers.authorization);
       // @ts-ignore
-      res.status(400).send({ error: error.message });
+      res.send({ instructor, token: getToken(instructor.id) });
     }
-  });
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
 app.listen(port, () => {
-    console.log(`App running: http://localhost:${port}`);
-  });
+  console.log(`App running: http://localhost:${port}`);
+});

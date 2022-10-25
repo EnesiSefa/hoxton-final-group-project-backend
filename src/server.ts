@@ -184,7 +184,8 @@ app.get("/courses", async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
       include: {
-        category: true,
+        category: true,reviews:true
+        
       },
     });
     res.send(courses);
@@ -267,17 +268,26 @@ app.get("/reviews", async (req, res) => {
 app.post("/review", async (req, res) => {
   try {
     const review = {
+      courseId: req.body.courseId,
+      userId: req.body.userId,
       review: req.body.review,
     };
     const newReview = await prisma.review.create({
       data: {
-        course: { connect: { id: req.body.courseId } },
-        user: { connect: { id: req.body.userId } },
+        courseId: review.courseId,
+        userId: review.userId,
         review: review.review,
       },
     });
 
-    res.send(newReview);
+    const course = await prisma.course.findUnique({
+      where: { id: req.body.courseId },
+      include: {
+        instructor: true,
+        reviews: { include: { user: true } },
+      },
+    });
+    res.send(course);
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });

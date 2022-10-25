@@ -184,7 +184,8 @@ app.get("/courses", async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
       include: {
-        category: true,
+        category: true,reviews:true
+        
       },
     });
     res.send(courses);
@@ -264,7 +265,7 @@ app.get("/reviews", async (req, res) => {
   }
 });
 
-app.post("/reviews", async (req, res) => {
+app.post("/review", async (req, res) => {
   try {
     const review = {
       courseId: req.body.courseId,

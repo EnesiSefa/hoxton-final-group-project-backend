@@ -44,6 +44,15 @@ app.get("/users", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/instructors", async (req, res) => {
+  try {
+    const instructors = await prisma.instructor.findMany();
+    res.send(instructors);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
 
 app.post("/sign-up/user", async (req, res) => {
   try {

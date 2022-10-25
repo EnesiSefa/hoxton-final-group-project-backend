@@ -162,6 +162,91 @@ app.get("/validate/instructor", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+<<<<<<< HEAD
+=======
+app.get("/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.send(users);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/instructors", async (req, res) => {
+  try {
+    const instructors = await prisma.instructor.findMany();
+    res.send(instructors);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/courses", async (req, res) => {
+  try {
+    const courses = await prisma.course.findMany({
+      include: {
+        category: true,
+      },
+    });
+    res.send(courses);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/course/:id", async (req, res) => {
+  try {
+    const courseId = Number(req.params.id);
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        instructor: true,
+        reviews: { include: { user: true } },
+      },
+    });
+    if (course) {
+      res.send(course);
+    } else {
+      res.send(404).send({ error: "Course not Found!" });
+    }
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/categories", async (req, res) => {
+  try {
+    const catogories = await prisma.category.findMany({
+      include: { courses: true },
+    });
+    res.send(catogories);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/categories/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const category = await prisma.category.findUnique({
+      where: { id: id },
+      include: { courses: true },
+    });
+
+    if (category) {
+      res.send(category);
+    } else {
+      res.status(400).send({ error: "Category not Found!" });
+    }
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+
+>>>>>>> b7fd0cbf57291284c27131faa5b314a0ca73a55d
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });

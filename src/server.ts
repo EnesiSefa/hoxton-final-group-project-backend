@@ -184,8 +184,8 @@ app.get("/courses", async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
       include: {
-        category: true,reviews:true
-        
+        category: true,
+        reviews: true,
       },
     });
     res.send(courses);
@@ -297,5 +297,3 @@ app.post("/review", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
-
-// test

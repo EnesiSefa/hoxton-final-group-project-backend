@@ -298,6 +298,3 @@ app.post("/review", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
-
-// test
-// test 123

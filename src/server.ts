@@ -35,25 +35,6 @@ async function getCurrentInstructor(token: string) {
   return instructor;
 }
 
-app.get("/users", async (req, res) => {
-  try {
-    const users = await prisma.user.findMany();
-    res.send(users);
-  } catch (error) {
-    // @ts-ignore
-    res.status(400).send({ error: error.message });
-  }
-});
-app.get("/instructors", async (req, res) => {
-  try {
-    const instructors = await prisma.instructor.findMany();
-    res.send(instructors);
-  } catch (error) {
-    // @ts-ignore
-    res.status(400).send({ error: error.message });
-  }
-});
-
 app.post("/sign-up/user", async (req, res) => {
   try {
     const match = await prisma.user.findUnique({
@@ -162,6 +143,58 @@ app.get("/validate/instructor", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.send(users);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/instructors", async (req, res) => {
+  try {
+    const instructors = await prisma.instructor.findMany();
+    res.send(instructors);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/courses", async (req, res) => {
+  try {
+    const courses = await prisma.course.findMany({
+      include: {
+        category: true,
+      },
+    });
+    res.send(courses);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/course/:id", async (req, res) => {
+  try {
+    const courseId = Number(req.params.id);
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        instructor: true,
+        reviews: { include: { user: true } },
+      },
+    });
+    if (course) {
+      res.send(course);
+    } else {
+      res.send(404).send({ error: "Course not Found!" });
+    }
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });

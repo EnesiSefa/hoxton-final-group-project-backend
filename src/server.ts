@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-
+//comment
 const app = express();
 app.use(cors());
 app.options("*", cors());

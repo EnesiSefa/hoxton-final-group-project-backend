@@ -35,6 +35,25 @@ async function getCurrentInstructor(token: string) {
   return instructor;
 }
 
+app.get("/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.send(users);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/instructors", async (req, res) => {
+  try {
+    const instructors = await prisma.instructor.findMany();
+    res.send(instructors);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+//test
 app.post("/sign-up/user", async (req, res) => {
   try {
     const match = await prisma.user.findUnique({

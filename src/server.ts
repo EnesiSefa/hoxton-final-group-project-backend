@@ -150,6 +150,7 @@ app.get("/validate/user", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+//test
 app.get("/validate/instructor", async (req, res) => {
   try {
     if (req.headers.authorization) {

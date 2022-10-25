@@ -67,9 +67,8 @@ app.post("/sign-up/user", async (req, res) => {
         data: {
           name: req.body.name,
           lastName: req.body.lastName,
-          profilePic: req.body.profilePic,
           email: req.body.email,
-          password: bcrypt.hashSync(req.body.password, 10),
+          password: bcrypt.hashSync(req.body.password),
         },
       });
       res.send({ newUser: newUser, token: getToken(newUser.id) });

@@ -243,6 +243,55 @@ app.get("/categories/:id", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/search/:course", async (req, res) => {
+  // @ts-ignore
+  const title = req.params.title;
+  const results = await prisma.course.findMany({
+    where: { title: { contains: title } },
+  });
+  res.send(results);
+});
+
+app.get("/reviews", async (req, res) => {
+  try {
+    const review = await prisma.review.findMany({
+      include: { user: true },
+    });
+    res.send(review);
+  } catch (error) {
+    // @ts-ignore
+    res.status(404).send({ error: error.message });
+  }
+});
+
+app.post("/reviews", async (req, res) => {
+  try {
+    const review = {
+      courseId: req.body.courseId,
+      userId: req.body.userId,
+      review: req.body.review,
+    };
+    const newReview = await prisma.review.create({
+      data: {
+        courseId: review.courseId,
+        userId: review.userId,
+        review: review.review,
+      },
+    });
+
+    const course = await prisma.course.findUnique({
+      where: { id: req.body.courseId },
+      include: {
+        instructor: true,
+        reviews: { include: { user: true } },
+      },
+    });
+    res.send(course);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);

@@ -162,8 +162,6 @@ app.get("/validate/instructor", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
-<<<<<<< HEAD
-=======
 app.get("/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany();
@@ -246,7 +244,6 @@ app.get("/categories/:id", async (req, res) => {
   }
 });
 
->>>>>>> b7fd0cbf57291284c27131faa5b314a0ca73a55d
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });

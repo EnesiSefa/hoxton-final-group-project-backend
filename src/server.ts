@@ -194,6 +194,36 @@ app.get("/course/:id", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/categories", async (req, res) => {
+  try {
+    const catogories = await prisma.category.findMany({
+      include: { courses: true },
+    });
+    res.send(catogories);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+app.get("/categories/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const category = await prisma.category.findUnique({
+      where: { id: id },
+      include: { courses: true },
+    });
+
+    if (category) {
+      res.send(category);
+    } else {
+      res.status(400).send({ error: "Category not Found!" });
+    }
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);

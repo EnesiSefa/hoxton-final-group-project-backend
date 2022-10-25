@@ -264,29 +264,20 @@ app.get("/reviews", async (req, res) => {
   }
 });
 
-app.post("/reviews", async (req, res) => {
+app.post("/review", async (req, res) => {
   try {
     const review = {
-      courseId: req.body.courseId,
-      userId: req.body.userId,
       review: req.body.review,
     };
     const newReview = await prisma.review.create({
       data: {
-        courseId: review.courseId,
-        userId: review.userId,
+        course: { connect: { id: req.body.courseId } },
+        user: { connect: { id: req.body.userId } },
         review: review.review,
       },
     });
 
-    const course = await prisma.course.findUnique({
-      where: { id: req.body.courseId },
-      include: {
-        instructor: true,
-        reviews: { include: { user: true } },
-      },
-    });
-    res.send(course);
+    res.send(newReview);
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });

@@ -53,7 +53,7 @@ app.get("/instructors", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
-
+//test
 app.post("/sign-up/user", async (req, res) => {
   try {
     const match = await prisma.user.findUnique({

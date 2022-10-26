@@ -25,7 +25,10 @@ function getToken(id: number) {
 async function getCurrentUser(token: string) {
   // @ts-ignore
   const { id } = jwt.verify(token, SECRET);
-  const user = await prisma.user.findUnique({ where: { id: id } });
+  const user = await prisma.user.findUnique({
+    where: { id: id },
+    include: { cart: { include: { course: true } } },
+  });
   return user;
 }
 async function getCurrentInstructor(token: string) {
@@ -316,6 +319,7 @@ app.post("/cartItem", async (req, res) => {
       return;
     }
     const user = await getCurrentUser(token);
+    console.log(user);
     if (!user) {
       res.status(401).send({ errors: ["Invalid token provided."] });
       return;
@@ -367,11 +371,12 @@ app.get("/cartItems", async (req, res) => {
       return;
     }
     const user = await getCurrentUser(token);
+    console.log(user);
     if (!user) {
       res.status(404).send({ errors: ["Invalid token"] });
       return;
     }
-    res.send(user).cart;
+    res.send(user.cart);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
@@ -405,7 +410,8 @@ app.delete("/cartItem/:id", async (req, res) => {
       res.status(404).send({ errors: ["Cart item not found"] });
       return;
     }
-    res.send(user.cart);
+
+    res.send(user);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
@@ -459,6 +465,22 @@ app.post("/buy", async (req, res) => {
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
+  }
+});
+
+app.post("/buy/:id/:courseId", async (req, res) => {
+  const id= Number(req.params.id)
+  const courseId= Number(req.params.courseId)
+  const findUser = await prisma.user.findUnique({
+    where: {id}
+  })
+  const findCourse = await prisma.course.findUnique({
+    where: {id}
+  })
+  if (findUser && findCourse) {
+    
+  } else{
+      res.status(400).send({error: ["User or Course not found"]})
   }
 });
 

@@ -467,3 +467,5 @@ app.listen(port, () => {
 });
 
 // test
+// test
+// addes a new foto for personal trainer

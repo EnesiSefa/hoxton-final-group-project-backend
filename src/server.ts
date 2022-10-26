@@ -371,7 +371,7 @@ app.get("/cartItems", async (req, res) => {
       res.status(404).send({ errors: ["Invalid token"] });
       return;
     }
-    res.send(user);
+    res.send(user).cart;
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
@@ -405,7 +405,7 @@ app.delete("/cartItem/:id", async (req, res) => {
       res.status(404).send({ errors: ["Cart item not found"] });
       return;
     }
-    res.send(user);
+    res.send(user.cart);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
@@ -423,7 +423,7 @@ app.post("/buy", async (req, res) => {
       } else {
         //2. Calculate the total from the cart
         let total = 0;
-        //@ts-ignore
+
         for (let item of user.cart) {
           total += item.course.price;
         }
@@ -431,7 +431,7 @@ app.post("/buy", async (req, res) => {
         //3. If the user has enough balance buy every course
         if (total < user.balance) {
           //4. Create a boughtCourse and delete the cartItem for each course in the cart
-          //@ts-ignore
+
           for (let item of user.cart) {
             await prisma.boughtCourse.create({
               data: {

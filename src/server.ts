@@ -35,6 +35,18 @@ async function getCurrentInstructor(token: string) {
   return instructor;
 }
 
+app.get("/", (req, res) => {
+  res.send(`<h1>Online Courses</h1>
+  <h2>Available resources:</h2>
+  <ul>
+    <li><a href="/users">Users</a></li>
+    <li><a href="/instructors">Instructors</a></li>
+    <li><a href="/courses/">Courses</a></li>
+    <li><a href="/categories/">Categories</a></li>
+    <li><a href="/reviews/">Reviews</a></li>
+  </ul>`);
+});
+
 app.get("/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany();
@@ -292,6 +304,161 @@ app.post("/review", async (req, res) => {
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });
+  }
+});
+
+app.post("/cartItem", async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+
+    if (!token) {
+      res.status(401).send({ errors: ["No token provided."] });
+      return;
+    }
+    const user = await getCurrentUser(token);
+    if (!user) {
+      res.status(401).send({ errors: ["Invalid token provided."] });
+      return;
+    }
+    const data = {
+      userId: user.id,
+      courseId: req.body.courseId,
+    };
+
+    let errors: string[] = [];
+    const course = await prisma.course.findUnique({
+      where: { id: Number(data.courseId) },
+    });
+
+    if (!course) {
+      res.status(404).send({ errors: ["Course not found"] });
+      return;
+    }
+    if (typeof data.userId !== "number") {
+      errors.push("UserId not provided or not a number");
+    }
+    if (typeof data.courseId !== "number") {
+      errors.push("CourseId not provided or not a number");
+      return;
+    }
+    if (errors.length === 0) {
+      const cartItem = await prisma.cartItem.create({
+        data: {
+          userId: data.userId,
+          courseId: data.courseId,
+        },
+        include: { course: true },
+      });
+      res.send(cartItem);
+    } else {
+      res.status(400).send({ errors });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+
+app.get("/cartItems", async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      res.status(404).send({ errors: ["Token not found"] });
+      return;
+    }
+    const user = await getCurrentUser(token);
+    if (!user) {
+      res.status(404).send({ errors: ["Invalid token"] });
+      return;
+    }
+    res.send(user);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+
+app.delete("/cartItem/:id", async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      res.status(404).send({ errors: ["Token not found"] });
+      return;
+    }
+    const user = await getCurrentUser(token);
+    if (!user) {
+      res.status(404).send({ errors: ["Invalid token provided"] });
+      return;
+    }
+    const id = Number(req.params.id);
+    if (!id) {
+      res
+        .status(400)
+        .send({ errors: ["CartItem with this id does not exist"] });
+      return;
+    }
+    const cartItem = await prisma.cartItem.delete({
+      where: { id },
+      include: { course: true },
+    });
+    if (!cartItem) {
+      res.status(404).send({ errors: ["Cart item not found"] });
+      return;
+    }
+    res.send(user);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+
+app.post("/buy", async (req, res) => {
+  // 1. Get the user from the token
+  try {
+    const token = req.headers.authorization;
+    if (token) {
+      const user = await getCurrentUser(token);
+      if (!user) {
+        res.status(400).send({ errors: ["Invalid token"] });
+      } else {
+        //2. Calculate the total from the cart
+        let total = 0;
+        //@ts-ignore
+        for (let item of user.cart) {
+          total += item.course.price;
+        }
+
+        //3. If the user has enough balance buy every course
+        if (total < user.balance) {
+          //4. Create a boughtCourse and delete the cartItem for each course in the cart
+          //@ts-ignore
+          for (let item of user.cart) {
+            await prisma.boughtCourse.create({
+              data: {
+                userId: item.userId,
+                courseId: item.courseId,
+              },
+            });
+
+            await prisma.cartItem.delete({ where: { id: item.id } });
+          }
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              balance: user.balance - total,
+            },
+          });
+          res.send({ message: "Order successful!" });
+        } else {
+          res.status(400).send({ errors: ["You're broke"] });
+        }
+      }
+    } else {
+      res.status(400).send({ errors: ["Token not found"] });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
   }
 });
 

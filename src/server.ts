@@ -187,6 +187,7 @@ app.get("/users", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/instructors", async (req, res) => {
   try {
     const instructors = await prisma.instructor.findMany();
@@ -417,7 +418,19 @@ app.delete("/cartItem/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
-
+app.patch("/user/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const user = await prisma.user.findUnique({
+      where: { id: id },
+      select: { balance: req.body.balance },
+    });
+    res.send(user);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
 // app.post("/buy", async (req, res) => {
 //   // 1. Get the user from the token
 //   try {
@@ -478,7 +491,7 @@ app.delete("/cartItem/:id", async (req, res) => {
 //     where: {id}
 //   })
 //   if (findUser && findCourse) {
-    
+
 //   } else{
 //       res.status(400).send({error: ["User or Course not found"]})
 //   }

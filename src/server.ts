@@ -418,71 +418,71 @@ app.delete("/cartItem/:id", async (req, res) => {
   }
 });
 
-app.post("/buy", async (req, res) => {
-  // 1. Get the user from the token
-  try {
-    const token = req.headers.authorization;
-    if (token) {
-      const user = await getCurrentUser(token);
-      if (!user) {
-        res.status(400).send({ errors: ["Invalid token"] });
-      } else {
-        //2. Calculate the total from the cart
-        let total = 0;
+// app.post("/buy", async (req, res) => {
+//   // 1. Get the user from the token
+//   try {
+//     const token = req.headers.authorization;
+//     if (token) {
+//       const user = await getCurrentUser(token);
+//       if (!user) {
+//         res.status(400).send({ errors: ["Invalid token"] });
+//       } else {
+//         //2. Calculate the total from the cart
+//         let total = 0;
 
-        for (let item of user.cart) {
-          total += item.course.price;
-        }
+//         for (let item of user.cart) {
+//           total += item.course.price;
+//         }
 
-        //3. If the user has enough balance buy every course
-        if (total < user.balance) {
-          //4. Create a boughtCourse and delete the cartItem for each course in the cart
+//         //3. If the user has enough balance buy every course
+//         if (total < user.balance) {
+//           //4. Create a boughtCourse and delete the cartItem for each course in the cart
 
-          for (let item of user.cart) {
-            await prisma.boughtCourse.create({
-              data: {
-                userId: item.userId,
-                courseId: item.courseId,
-              },
-            });
+//           for (let item of user.cart) {
+//             await prisma.boughtCourse.create({
+//               data: {
+//                 userId: item.userId,
+//                 courseId: item.courseId,
+//               },
+//             });
 
-            await prisma.cartItem.delete({ where: { id: item.id } });
-          }
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              balance: user.balance - total,
-            },
-          });
-          res.send({ message: "Order successful!" });
-        } else {
-          res.status(400).send({ errors: ["You're broke"] });
-        }
-      }
-    } else {
-      res.status(400).send({ errors: ["Token not found"] });
-    }
-  } catch (error) {
-    //@ts-ignore
-    res.status(400).send({ errors: [error.message] });
-  }
-});
+//             await prisma.cartItem.delete({ where: { id: item.id } });
+//           }
+//           await prisma.user.update({
+//             where: { id: user.id },
+//             data: {
+//               balance: user.balance - total,
+//             },
+//           });
+//           res.send({ message: "Order successful!" });
+//         } else {
+//           res.status(400).send({ errors: ["You're broke"] });
+//         }
+//       }
+//     } else {
+//       res.status(400).send({ errors: ["Token not found"] });
+//     }
+//   } catch (error) {
+//     //@ts-ignore
+//     res.status(400).send({ errors: [error.message] });
+//   }
+// });
 
-app.post("/buy/:id/:courseId", async (req, res) => {
-  const id= Number(req.params.id)
-  const courseId= Number(req.params.courseId)
-  const findUser = await prisma.user.findUnique({
-    where: {id}
-  })
-  const findCourse = await prisma.course.findUnique({
-    where: {id}
-  })
-  if (findUser && findCourse) {
+// app.post("/buy/:id/:courseId", async (req, res) => {
+//   const id= Number(req.params.id)
+//   const courseId= Number(req.params.courseId)
+//   const findUser = await prisma.user.findUnique({
+//     where: {id}
+//   })
+//   const findCourse = await prisma.course.findUnique({
+//     where: {id}
+//   })
+//   if (findUser && findCourse) {
     
-  } else{
-      res.status(400).send({error: ["User or Course not found"]})
-  }
-});
+//   } else{
+//       res.status(400).send({error: ["User or Course not found"]})
+//   }
+// });
 
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);

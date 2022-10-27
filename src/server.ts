@@ -429,7 +429,3 @@ app.post("/addtoCart/:id/:courseId", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
-
-// test
-// test
-// addes a new foto for personal trainer

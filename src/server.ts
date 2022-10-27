@@ -427,6 +427,90 @@ app.post("/addtoCart/:id/:courseId", async (req, res) => {
   }
 });
 
+app.get("/cartItem", async (req, res) => {
+  try {
+    // @ts-ignore
+    const cartItem = await prisma.cartItem.findMany({
+      include: { course: true, user: true },
+    });
+    res.send(cartItem);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+
+// app.post("/cartItem", async (req, res) => {
+//   try {
+//     const item = {
+//       userId: req.body.userId,
+//       courseId: req.body.courseId
+//     };
+//     // @ts-ignore
+//     const cartItem = await prisma.cartItem.create({
+//       data: {
+//         userId: item.userId,
+//         courseId: item.courseId
+//       },
+//     });
+//     res.send(cartItem);
+//   } catch (error) {
+//     // @ts-ignore
+//     res.status(400).send({ error: error.message });
+//   }
+// });
+app.post("/cartItem", async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+
+    if (!token) {
+      res.status(401).send({ errors: ["No token provided."] });
+      return;
+    }
+    const user = await getCurrentUser(token);
+    if (!user) {
+      res.status(401).send({ errors: ["Invalid token provided."] });
+      return;
+    }
+    const data = {
+      userId: user.id,
+      courseId: req.body.courseId,
+    };
+
+    let errors: string[] = [];
+    const course = await prisma.course.findUnique({
+      where: { id: Number(data.courseId) },
+    });
+
+    if (!course) {
+      res.status(404).send({ errors: ["Course not found"] });
+      return;
+    }
+    
+    if (typeof data.userId !== "number") {
+      errors.push("UserId not provided or not a number");
+    }
+    if (typeof data.courseId !== "number") {
+      errors.push("courseId not provided or not a number");
+      return
+      const cartItem = await prisma.cartItem.create({
+        data: {
+          userId: data.userId,
+          courseId: data.courseId,
+        },
+        include: { course: true ,}
+      });
+
+      res.send(cartItem);
+    } else {
+      res.status(400).send({ errors });
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
+
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });

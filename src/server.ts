@@ -510,7 +510,38 @@ app.post("/cartItem", async (req, res) => {
   }
 });
 
-
+app.delete("/cartItem/:id", async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      res.status(404).send({ errors: ["Token not found"] });
+      return;
+    }
+    const user = await getCurrentUser(token);
+    if (!user) {
+      res.status(404).send({ errors: ["Invalid token provided"] });
+      return;
+    }
+    const id = Number(req.params.id);
+    if (!id) {
+      res
+        .status(400)
+        .send({ errors: ["CartItem with this id does not exist"] });
+      return;
+    }
+    const cartItem = await prisma.cartItem.delete({
+      where: { id },
+      include: { course: true },
+    });
+    if (!cartItem) {
+      res.status(404).send({ errors: ["Cart item not found"] });
+      return;
+    }
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ errors: [error.message] });
+  }
+});
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });

@@ -486,31 +486,18 @@ app.post("/cartItem", async (req, res) => {
       res.status(404).send({ errors: ["Course not found"] });
       return;
     }
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 67f3a52c96213d1fcf0e4ab50b1c52e37b3c7146
     if (typeof data.userId !== "number") {
       errors.push("UserId not provided or not a number");
     }
     if (typeof data.courseId !== "number") {
       errors.push("courseId not provided or not a number");
-<<<<<<< HEAD
       return;
-=======
-      return
->>>>>>> 67f3a52c96213d1fcf0e4ab50b1c52e37b3c7146
       const cartItem = await prisma.cartItem.create({
         data: {
           userId: data.userId,
           courseId: data.courseId,
         },
-<<<<<<< HEAD
         include: { course: true },
-=======
-        include: { course: true ,}
->>>>>>> 67f3a52c96213d1fcf0e4ab50b1c52e37b3c7146
       });
 
       res.send(cartItem);

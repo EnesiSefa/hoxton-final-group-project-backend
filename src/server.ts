@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
 
 app.get("/users", async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({include:{cart:true,boughtCourse:true},});
     res.send(users);
   } catch (error) {
     // @ts-ignore
@@ -366,24 +366,19 @@ app.post("/cartItem", async (req, res) => {
 
 app.get("/cartItems", async (req, res) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) {
-      res.status(404).send({ errors: ["Token not found"] });
-      return;
-    }
-    const user = await getCurrentUser(token);
-    console.log(user);
-    if (!user) {
-      res.status(404).send({ errors: ["Invalid token"] });
-      return;
-    }
-    res.send(user.cart);
+    const cart = prisma.cartItem.findMany();
+    res.send(cart);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
   }
 });
-
+app.get("/cartItem/:id", async (req, res) => {
+  const cartItem = await prisma.cartItem.findUnique({
+    where: { id: Number(req.params.id) },include:{user:true,course:true}
+  });
+  res.send(cartItem);
+});
 app.delete("/cartItem/:id", async (req, res) => {
   try {
     const token = req.headers.authorization;
@@ -418,7 +413,7 @@ app.delete("/cartItem/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
-app.patch("/user/:id", async (req, res) => {
+app.patch("/changeUserBalance/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
     const user = await prisma.user.findUnique({
@@ -496,6 +491,31 @@ app.patch("/user/:id", async (req, res) => {
 //       res.status(400).send({error: ["User or Course not found"]})
 //   }
 // });
+
+app.post("/addtoCart/:id/:courseId", async (req, res) => {
+  const id = Number(req.params.id);
+
+  const findUser = await prisma.user.findUnique({
+    where: { id },
+  });
+
+  const findCourse = await prisma.course.findUnique({
+    where: { id: Number(req.params.courseId) },
+  });
+  if (findUser && findCourse) {
+    const cart = await prisma.cartItem.upsert({
+      where: { id },
+      create: {
+        course: { connect: { id: req.body.courseId } },
+        user: { connect: { id: req.body.userId } },
+      },
+      update: { course: { connect: { id: req.body.courseId } } },
+    });
+    res.send(cart);
+  } else {
+    res.status(400).send({ error: ["User or Course not found"] });
+  }
+});
 
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);

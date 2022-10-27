@@ -61,16 +61,32 @@ app.get("/users", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/instructors", async (req, res) => {
   try {
-    const instructors = await prisma.instructor.findMany();
+    const instructors = await prisma.instructor.findMany({
+      include: { courses: true },
+    });
     res.send(instructors);
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });
   }
 });
-//test
+
+app.get("/instructor/:id", async (req, res) => {
+  try {
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: Number(req.params.id) },
+      include:{courses:true}
+    });
+    res.send(instructor);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+
 app.post("/sign-up/user", async (req, res) => {
   try {
     const match = await prisma.user.findUnique({
@@ -95,6 +111,7 @@ app.post("/sign-up/user", async (req, res) => {
     res.status(400).send({ error: [error.message] });
   }
 });
+
 app.post("/sign-up/instructor", async (req, res) => {
   try {
     const match = await prisma.instructor.findUnique({
@@ -137,6 +154,7 @@ app.post("/sign-in/user", async (req, res) => {
     res.status(400).send({ error: [error.message] });
   }
 });
+
 app.post("/sign-in/instructor", async (req, res) => {
   try {
     const instructor = await prisma.instructor.findUnique({
@@ -168,7 +186,7 @@ app.get("/validate/user", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
-//test
+
 app.get("/validate/instructor", async (req, res) => {
   try {
     if (req.headers.authorization) {
@@ -181,10 +199,30 @@ app.get("/validate/instructor", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/users", async (req, res) => {
   try {
     const users = await prisma.user.findMany();
     res.send(users);
+  } catch (error) {
+    // @ts-ignore
+    res.status(400).send({ error: error.message });
+  }
+});
+
+app.post("/course", async (req, res) => {
+  try {
+    const course = await prisma.course.create({
+      data: {
+        categoryId: req.body.categoryId,
+        instructorId: req.body.instructorId,
+        title: req.body.title,
+        image: req.body.image,
+        description: req.body.description,
+        price: req.body.price,
+      },
+    });
+    res.send(course);
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });
@@ -200,6 +238,19 @@ app.get("/instructors", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/instructor/:id", async (req, res) => {
+  try {
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: Number(req.params.id) },
+      include:{courses:true}
+    });
+    res.send(instructor);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
+
 app.get("/courses", async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
@@ -234,6 +285,7 @@ app.get("/course/:id", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/categories", async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
@@ -245,6 +297,7 @@ app.get("/categories", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/categories/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -264,6 +317,7 @@ app.get("/categories/:id", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+
 app.get("/search/:course", async (req, res) => {
   // @ts-ignore
   const title = req.params.title;
@@ -346,6 +400,7 @@ app.get("/cartItems", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
+
 app.get("/cartItem/:id", async (req, res) => {
   const cartItem = await prisma.cartItem.findUnique({
     where: { id: Number(req.params.id) },
@@ -353,6 +408,7 @@ app.get("/cartItem/:id", async (req, res) => {
   });
   res.send(cartItem);
 });
+
 app.delete("/cartItem/:id", async (req, res) => {
   try {
     const token = req.headers.authorization;
@@ -459,6 +515,7 @@ app.get("/cartItem", async (req, res) => {
 //     res.status(400).send({ error: error.message });
 //   }
 // });
+
 app.post("/cartItem", async (req, res) => {
   try {
     const token = req.headers.authorization;

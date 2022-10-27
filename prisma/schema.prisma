@@ -65,7 +65,7 @@ model Category {
 model CartItem {
   id       Int      @id @default(autoincrement())
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId   Int
   courseId   Int
  }

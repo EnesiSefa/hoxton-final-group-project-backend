@@ -478,12 +478,12 @@ app.post("/cartItem", async (req, res) => {
     };
 
     let errors: string[] = [];
-    const book = await prisma.course.findUnique({
+    const course = await prisma.course.findUnique({
       where: { id: Number(data.courseId) },
     });
 
-    if (!book) {
-      res.status(404).send({ errors: ["Book not found"] });
+    if (!course) {
+      res.status(404).send({ errors: ["Course not found"] });
       return;
     }
     

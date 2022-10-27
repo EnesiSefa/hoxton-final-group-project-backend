@@ -238,6 +238,18 @@ app.get("/instructors", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+app.get("/instructor/:id", async (req, res) => {
+  try {
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: Number(req.params.id) },
+      include:{courses:true}
+    });
+    res.send(instructor);
+  } catch (error) {
+    //@ts-ignore
+    res.status(400).send({ error: [error.message] });
+  }
+});
 
 app.get("/courses", async (req, res) => {
   try {

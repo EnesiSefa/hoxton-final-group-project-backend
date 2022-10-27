@@ -371,7 +371,7 @@ app.get("/cartItems", async (req, res) => {
       res.status(404).send({ errors: ["Invalid token"] });
       return;
     }
-    res.send(user).cart;
+    res.send(user.cart);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });

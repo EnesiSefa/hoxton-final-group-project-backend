@@ -486,19 +486,19 @@ app.post("/cartItem", async (req, res) => {
       res.status(404).send({ errors: ["Course not found"] });
       return;
     }
-    
+
     if (typeof data.userId !== "number") {
       errors.push("UserId not provided or not a number");
     }
     if (typeof data.courseId !== "number") {
       errors.push("courseId not provided or not a number");
-      return
+      return;
       const cartItem = await prisma.cartItem.create({
         data: {
           userId: data.userId,
           courseId: data.courseId,
         },
-        include: { course: true ,}
+        include: { course: true },
       });
 
       res.send(cartItem);
@@ -514,3 +514,5 @@ app.post("/cartItem", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
+
+// test

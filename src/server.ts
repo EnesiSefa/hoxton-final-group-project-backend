@@ -236,10 +236,10 @@ app.get("/course/:id", async (req, res) => {
 });
 app.get("/categories", async (req, res) => {
   try {
-    const catogories = await prisma.category.findMany({
+    const categories = await prisma.category.findMany({
       include: { courses: true },
     });
-    res.send(catogories);
+    res.send(categories);
   } catch (error) {
     // @ts-ignore
     res.status(400).send({ error: error.message });
@@ -325,9 +325,8 @@ app.post("/cartItem", async (req, res) => {
       data: {
         userId: data.userId,
         courseId: data.courseId,
-
       },
-      include: { course: true,user:true },
+      include: { course: true, user: true },
     });
     res.send(cartItem);
   } catch (error) {
@@ -338,7 +337,9 @@ app.post("/cartItem", async (req, res) => {
 
 app.get("/cartItems", async (req, res) => {
   try {
-    const cart = await prisma.cartItem.findMany({include:{course:true,user:true}});
+    const cart = await prisma.cartItem.findMany({
+      include: { course: true, user: true },
+    });
     res.send(cart);
   } catch (error) {
     //@ts-ignore

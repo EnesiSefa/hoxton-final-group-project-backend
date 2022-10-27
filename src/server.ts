@@ -496,21 +496,13 @@ app.post("/cartItem", async (req, res) => {
     }
     if (typeof data.courseId !== "number") {
       errors.push("courseId not provided or not a number");
-<<<<<<< HEAD
       return;
-=======
-      return
->>>>>>> 67f3a52c96213d1fcf0e4ab50b1c52e37b3c7146
       const cartItem = await prisma.cartItem.create({
         data: {
           userId: data.userId,
           courseId: data.courseId,
         },
-<<<<<<< HEAD
         include: { course: true },
-=======
-        include: { course: true ,}
->>>>>>> 67f3a52c96213d1fcf0e4ab50b1c52e37b3c7146
       });
 
       res.send(cartItem);

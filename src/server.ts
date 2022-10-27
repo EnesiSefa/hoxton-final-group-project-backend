@@ -579,6 +579,7 @@ app.delete("/cartItem/:id", async (req, res) => {
       include: { course: true },
     });
     if (!cartItem) {
+    //@ts-ignore
       res.status(404).send({ errors: ["Cart item not found"] });
       return;
     }

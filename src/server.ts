@@ -13,7 +13,7 @@ app.use(express.json());
 
 const prisma = new PrismaClient();
 
-const port = 4167;
+const port = 4169;
 
 const SECRET = "ABC";
 
@@ -52,7 +52,9 @@ app.get("/", (req, res) => {
 
 app.get("/users", async (req, res) => {
   try {
-    const users = await prisma.user.findMany({include:{cart:true,boughtCourse:true},});
+    const users = await prisma.user.findMany({
+      include: { cart: true, boughtCourse: true },
+    });
     res.send(users);
   } catch (error) {
     // @ts-ignore
@@ -119,6 +121,7 @@ app.post("/sign-up/instructor", async (req, res) => {
     res.status(400).send({ error: [error.message] });
   }
 });
+
 app.post("/sign-in/user", async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -313,51 +316,20 @@ app.post("/review", async (req, res) => {
 
 app.post("/cartItem", async (req, res) => {
   try {
-    const token = req.headers.authorization;
-
-    if (!token) {
-      res.status(401).send({ errors: ["No token provided."] });
-      return;
-    }
-    const user = await getCurrentUser(token);
-    console.log(user);
-    if (!user) {
-      res.status(401).send({ errors: ["Invalid token provided."] });
-      return;
-    }
     const data = {
-      userId: user.id,
+      userId: req.body.userId,
       courseId: req.body.courseId,
     };
 
-    let errors: string[] = [];
-    const course = await prisma.course.findUnique({
-      where: { id: Number(data.courseId) },
-    });
+    const cartItem = await prisma.cartItem.create({
+      data: {
+        userId: data.userId,
+        courseId: data.courseId,
 
-    if (!course) {
-      res.status(404).send({ errors: ["Course not found"] });
-      return;
-    }
-    if (typeof data.userId !== "number") {
-      errors.push("UserId not provided or not a number");
-    }
-    if (typeof data.courseId !== "number") {
-      errors.push("CourseId not provided or not a number");
-      return;
-    }
-    if (errors.length === 0) {
-      const cartItem = await prisma.cartItem.create({
-        data: {
-          userId: data.userId,
-          courseId: data.courseId,
-        },
-        include: { course: true },
-      });
-      res.send(cartItem);
-    } else {
-      res.status(400).send({ errors });
-    }
+      },
+      include: { course: true,user:true },
+    });
+    res.send(cartItem);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ errors: [error.message] });
@@ -366,7 +338,7 @@ app.post("/cartItem", async (req, res) => {
 
 app.get("/cartItems", async (req, res) => {
   try {
-    const cart = prisma.cartItem.findMany();
+    const cart = await prisma.cartItem.findMany({include:{course:true,user:true}});
     res.send(cart);
   } catch (error) {
     //@ts-ignore
@@ -375,7 +347,8 @@ app.get("/cartItems", async (req, res) => {
 });
 app.get("/cartItem/:id", async (req, res) => {
   const cartItem = await prisma.cartItem.findUnique({
-    where: { id: Number(req.params.id) },include:{user:true,course:true}
+    where: { id: Number(req.params.id) },
+    include: { user: true, course: true },
   });
   res.send(cartItem);
 });
@@ -413,6 +386,7 @@ app.delete("/cartItem/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
+
 app.patch("/changeUserBalance/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -426,71 +400,6 @@ app.patch("/changeUserBalance/:id", async (req, res) => {
     res.status(400).send({ errors: [error.message] });
   }
 });
-// app.post("/buy", async (req, res) => {
-//   // 1. Get the user from the token
-//   try {
-//     const token = req.headers.authorization;
-//     if (token) {
-//       const user = await getCurrentUser(token);
-//       if (!user) {
-//         res.status(400).send({ errors: ["Invalid token"] });
-//       } else {
-//         //2. Calculate the total from the cart
-//         let total = 0;
-
-//         for (let item of user.cart) {
-//           total += item.course.price;
-//         }
-
-//         //3. If the user has enough balance buy every course
-//         if (total < user.balance) {
-//           //4. Create a boughtCourse and delete the cartItem for each course in the cart
-
-//           for (let item of user.cart) {
-//             await prisma.boughtCourse.create({
-//               data: {
-//                 userId: item.userId,
-//                 courseId: item.courseId,
-//               },
-//             });
-
-//             await prisma.cartItem.delete({ where: { id: item.id } });
-//           }
-//           await prisma.user.update({
-//             where: { id: user.id },
-//             data: {
-//               balance: user.balance - total,
-//             },
-//           });
-//           res.send({ message: "Order successful!" });
-//         } else {
-//           res.status(400).send({ errors: ["You're broke"] });
-//         }
-//       }
-//     } else {
-//       res.status(400).send({ errors: ["Token not found"] });
-//     }
-//   } catch (error) {
-//     //@ts-ignore
-//     res.status(400).send({ errors: [error.message] });
-//   }
-// });
-
-// app.post("/buy/:id/:courseId", async (req, res) => {
-//   const id= Number(req.params.id)
-//   const courseId= Number(req.params.courseId)
-//   const findUser = await prisma.user.findUnique({
-//     where: {id}
-//   })
-//   const findCourse = await prisma.course.findUnique({
-//     where: {id}
-//   })
-//   if (findUser && findCourse) {
-
-//   } else{
-//       res.status(400).send({error: ["User or Course not found"]})
-//   }
-// });
 
 app.post("/addtoCart/:id/:courseId", async (req, res) => {
   const id = Number(req.params.id);

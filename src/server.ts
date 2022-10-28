@@ -238,6 +238,7 @@ app.get("/instructors", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
+//ok
 app.get("/instructor/:id/courses", async (req, res) => {
   try {
     const id = req.params.id;

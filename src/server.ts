@@ -244,7 +244,7 @@ app.get("/instructor/:id/courses", async (req, res) => {
     const id = req.params.id;
 
     const courses = await prisma.course.findMany({
-      where:{instructorId:Number(id)}
+      where: { instructorId: Number(id) },
     });
     res.send(courses);
   } catch (error) {
@@ -605,3 +605,5 @@ app.delete("/cartItem/:id", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
+
+// test

@@ -78,7 +78,7 @@ app.get("/instructor/:id", async (req, res) => {
   try {
     const instructor = await prisma.instructor.findUnique({
       where: { id: Number(req.params.id) },
-      include:{courses:true}
+      include: { courses: true },
     });
     res.send(instructor);
   } catch (error) {
@@ -238,13 +238,14 @@ app.get("/instructors", async (req, res) => {
     res.status(400).send({ error: error.message });
   }
 });
-app.get("/instructor/:id", async (req, res) => {
+app.get("/instructor/:id/courses", async (req, res) => {
   try {
-    const instructor = await prisma.instructor.findUnique({
-      where: { id: Number(req.params.id) },
-      include:{courses:true}
+    const id = req.params.id;
+
+    const courses = await prisma.course.findMany({
+      where:{instructorId:Number(id)}
     });
-    res.send(instructor);
+    res.send(courses);
   } catch (error) {
     //@ts-ignore
     res.status(400).send({ error: [error.message] });
@@ -591,7 +592,7 @@ app.delete("/cartItem/:id", async (req, res) => {
       include: { course: true },
     });
     if (!cartItem) {
-    //@ts-ignore
+      //@ts-ignore
       res.status(404).send({ errors: ["Cart item not found"] });
       return;
     }

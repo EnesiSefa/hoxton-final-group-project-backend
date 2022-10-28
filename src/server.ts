@@ -244,19 +244,7 @@ app.get("/instructor/:id/courses", async (req, res) => {
     const id = req.params.id;
 
     const courses = await prisma.course.findMany({
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
       where: { instructorId: Number(id) },
-=======
-      where:{instructorId:Number(id)}
->>>>>>> 95f5f120d9d9787f92243036520ac43cde3d99da
-=======
-      where:{instructorId:Number(id)}
->>>>>>> 95f5f120d9d9787f92243036520ac43cde3d99da
-=======
-      where:{instructorId:Number(id)}
->>>>>>> a1cd37777f3e5d7f24baf575ccbb4258c7e93913
     });
     res.send(courses);
   } catch (error) {
@@ -617,8 +605,3 @@ app.delete("/cartItem/:id", async (req, res) => {
 app.listen(port, () => {
   console.log(`App running: http://localhost:${port}`);
 });
-
-// test
-
-
-// testing

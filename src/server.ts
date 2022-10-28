@@ -244,7 +244,11 @@ app.get("/instructor/:id/courses", async (req, res) => {
     const id = req.params.id;
 
     const courses = await prisma.course.findMany({
+<<<<<<< HEAD
       where: { instructorId: Number(id) },
+=======
+      where:{instructorId:Number(id)}
+>>>>>>> 95f5f120d9d9787f92243036520ac43cde3d99da
     });
     res.send(courses);
   } catch (error) {
